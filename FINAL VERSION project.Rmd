@@ -1,0 +1,784 @@
+---
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+# Italian Wine in the US Market
+## Authors: Andrea Salusso mat. 885032, Niklas Selch 887250, Giulio Cico 887723, David Burca 887725, Mattia Donadei 884911
+
+Italy World Wine, an Italian wine company, needs to improve its marketing methods for selling wine in the United States. In order to increase its performance in the same market, the company aims to acquire a strategic orientation that is more suited to the needs of the US market. To this end, they commissioned a study to determine how several sorts of elements, such as intrinsic and extrinsic product attributes, habits and consumption scenarios, consumer perceptions, and demographic variables, influence the inclination to buy Italian wine on the American market.
+
+```{r setup, cache = F}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+So first of all we load the dataset and exclude all the variables with na as output so that we are left off with just variables with values. We order the rows starting from 1 to the n value of the variables in the original dataset. 
+
+```{r}
+wine <- read.table("wine.txt", header = T)
+download <- na.exclude(wine)
+rownames(download) <- 1:nrow(download)
+
+wine<-download
+datawine<-download
+ori<-download
+n<-nrow(wine)
+
+
+```
+
+
+Question 1: Is There a difference in the way consumers perceive Italian wines and other countries’ wines?
+
+We start by creating a binomial variable "div" dividing our  into people who prefer to drink Italian Wine and those who drink non-italian Wine. If we compare the answers of the two groups on general Questions. We can understand where there is the difference in perception
+
+```{r}
+s<-rep(0,n)
+
+
+s[ori[,31]!=1]<-"Other Buy"
+s[ori[,31]==1]<-"IT Buy"
+
+```
+Now we need to create factors that we are going to compare
+```{r}
+#For you drinking wine signifies
+meaning <- ori[,9]   
+meaning[meaning==1]<- "Traveleing"
+meaning[meaning==2]<- "relaxing"
+meaning[meaning==3]<- "romatic"
+meaning[meaning==4]<- "fun"
+meaning[meaning==5]<- "eating"
+meaning[meaning==6]<- "entering cultures"
+meaning[meaning==7]<- "interlectual satisfaction"
+meaning[meaning==8]<- "sensory enjoyment"
+meaning <- factor(meaning)
+wine[,9]<- meaning
+
+# What is your perception of wine as a commercial product?
+
+commer <- ori[,10]
+commer[commer==1]<- "for an elite"
+commer[commer==2]<- "for everybody"
+commer[commer==3]<- "tradional not for young people"
+commer <- factor(commer)
+wine[,10]<- commer
+
+#How much money do you spend on your wine 
+money <- ori[,54]
+money[money == 1] <- "7-14"
+money[money == 2] <- "15-21"
+money[money == 3] <- "over"
+money <- factor(money)
+wine[,54] <- money
+
+#which are the important feature while purchasing wine
+
+#place of origin
+origin <- ori[,11]
+origin <- factor(origin)
+wine[,11] <- origin
+
+#quality 
+qua <- ori[,15]
+qua <- factor(qua)
+wine[,15] <- qua
+
+#wine brand 
+brand <- ori[,12]
+brand <- factor(brand)
+wine[,12] <- brand
+
+#I tend to buy the wines I like and know and very rarely try new ones
+new <- ori[,25]
+new <- factor(new)
+wine[25] <- new
+
+#You judge a wines Italian provenance as?
+jud <- ori[,35]
+jud[jud==1]<- "guarantee of its quality"
+jud[jud ==2]<- "prompts to buy"
+jud[jud==3]<- "irrelevant"
+jud[jud==4]<- "deters from buying"
+jud <- factor(jud)
+wine[,35] <- jud
+
+#compared to american wine italian is?
+comp <- ori[,36]
+comp[comp==1] <-"higher quality"
+comp[comp==2] <-"lower quality"
+comp[comp==3] <-"same quality"
+comp<- factor(comp)
+wine[,36] <- comp
+
+#do you know italian Wine?
+know <- ori[,32]
+know [know==1]<- "yes"
+know [know==2]<- "no"
+know<- factor(know)
+wine[,32] <- know
+
+
+
+
+```
+Now we are able to compare the answers to the different questions. In order to understand the differences in Perception of Wine in the General
+
+Do you know any Italian Wine?
+
+```{r}
+tab1<-table(s,know)
+tab1.prop<-round(prop.table(tab1),3) 
+tab1.prop1<-round(prop.table(tab1,1),3)
+tab1.prop2<-round(prop.table(tab1,2),3)
+
+res<-list(addmargins(tab1),
+          addmargins(tab1.prop*100),
+          addmargins(tab1.prop1*100,2),
+          addmargins(tab1.prop2*100,1))
+res
+
+barchartGC(~know+s, ylim=c(0,320))
+
+
+
+```
+The result on the Question is like expected, by comparing the answers in the proportion table, we can see that people who drink Italian have a higher proportion of knowing any Italian wine. Also, there is a small proportion of 17 people who drink italian wine.
+
+
+
+Let's have a look at the way how the different groups choose which wine they buy.
+
+
+```{r}
+tab1<-table(s,qua)     #quality 
+tab1.prop<-round(prop.table(tab1),3) 
+tab1.prop1<-round(prop.table(tab1,1),3)
+tab1.prop2<-round(prop.table(tab1,2),3)
+
+res<-list(addmargins(tab1),
+          addmargins(tab1.prop*100),
+          addmargins(tab1.prop1*100,2),
+          addmargins(tab1.prop2*100,1))
+res
+
+
+
+tab1<-table(s,origin)
+tab1.prop<-round(prop.table(tab1),3) 
+tab1.prop1<-round(prop.table(tab1,1),3)
+tab1.prop2<-round(prop.table(tab1,2),3)
+
+res<-list(addmargins(tab1),
+          addmargins(tab1.prop*100),
+          addmargins(tab1.prop1*100,2),
+          addmargins(tab1.prop2*100,1))
+res
+
+
+
+tab1<-table(s,brand)
+tab1.prop<-round(prop.table(tab1),3) 
+tab1.prop1<-round(prop.table(tab1,1),3)
+tab1.prop2<-round(prop.table(tab1,2),3)
+
+res<-list(addmargins(tab1),
+          addmargins(tab1.prop*100),
+          addmargins(tab1.prop1*100,2),
+          addmargins(tab1.prop2*100,1))
+res
+
+
+```
+Looking on these numbers we can clearly see, that the group of Italian wine drinkers. Values origin and quality are higher when choosing a wine. In terms of brand, the numbers are more or less the same.
+
+
+For you drinking wine signifies?
+
+```{r}
+tab1<-table(s,meaning)
+tab1.prop<-round(prop.table(tab1),3) 
+tab1.prop1<-round(prop.table(tab1,1),3)
+tab1.prop2<-round(prop.table(tab1,2),3)
+
+res<-list(addmargins(tab1),
+          addmargins(tab1.prop*100),
+          addmargins(tab1.prop1*100,2),
+          addmargins(tab1.prop2*100,1))
+barchartGC(~meaning+s, ylim=c(0,300))
+
+
+```
+You judge a wine’s Italian provenance as...
+
+```{r}
+tab1<-table(s,jud)
+
+tab1.prop<-round(prop.table(tab1),3) 
+tab1.prop1<-round(prop.table(tab1,1),3)
+tab1.prop2<-round(prop.table(tab1,2),3)
+
+res<-list(addmargins(tab1),
+          addmargins(tab1.prop*100),
+          addmargins(tab1.prop1*100,2),
+          addmargins(tab1.prop2*100,1))
+res
+barchartGC(~jud, ylim=c(0,180))
+barchartGC(~jud+s, ylim=c(0,180))
+
+```
+
+```{r}
+proptestGC(~s+jud, success = "prompts to buy", p=0, graph = T,first = "IT Buy", alternative = "two.sided" )
+```
+By having an look on this we see that the P-value of interference is quite high. So we can say that the proportion of consumers that are prompt to buy italian wine, is equally dived over the two groups 
+
+```{r}
+proptestGC(~s+jud, success = "guarantee of its quality", p=0, graph = T, first = "IT Buy", alternative = "two.sided"  )
+```
+By performing the same test on the guarantee of its quality section. We can see that the P-value is low, so the proportion of consumers is higher among the usual italian wine drinkers
+
+
+Last but not least, we can also see that on large italian wine drinkers spend more money on wine 
+
+```{r}
+tab1<-table(s,money)
+
+tab1.prop<-round(prop.table(tab1),3) 
+tab1.prop1<-round(prop.table(tab1,1),3)
+tab1.prop2<-round(prop.table(tab1,2),3)
+
+res<-list(addmargins(tab1),
+          addmargins(tab1.prop*100),
+          addmargins(tab1.prop1*100,2),
+          addmargins(tab1.prop2*100,1))
+res
+barchartGC(~money, ylim=c(0,180))
+
+```
+
+
+
+
+
+Question 2:
+What are the key factors in obtaining success on the American market? 
+(developing a strong brand? Red wines? White wines?, wines with particular characteristics?)
+
+First we load the  and remove all the NA data
+```{r}
+par(mfrow=c(2,2),cex=0.8,cex.main=1,cex.axis=0.9)
+for (i in 36:43){
+freq<-table(datawine[,i+1])
+bp<-barplot(freq,ylim=c(0,max(freq)*(1+0.5)),
+main=colnames(datawine)[i+1])
+text(bp, freq, labels=freq,pos=3)
+}
+par(mfrow=c(2,2),cex=0.6,cex.main=1, cex.axis=0.9)
+```
+```{r}
+dataw<-na.exclude(datawine)
+rownames(dataw)<-1:nrow(dataw)
+data<-dataw
+original<-dataw
+n<-nrow(data)
+```
+
+We use the generalized linear model to create a linear regression using a binomial variable of success
+##Success on Quality and willingness to buy
+We create a binomial variable success based on v35 that report 1 if the respondent chose “Superior quality” or “prompt to buy”, and 0 for the others
+
+```{r}
+win<-rep(0,n)
+win[original[,35] == 1 || original[,35] ==2]<-1
+
+win[original[,35] ==3 ]<-0
+win<-factor(win)
+```
+I used the generalized linear model, which is a more flexible generalization of ordinary linear regression that allows for response variables that have error distribution models other than a normal distribution.
+```{r}
+lmodel<-glm(win~data[,11] + data[,12]+ data[,13] + data[, 14] + data[,15] + data[, 16] + data[, 17] + data[, 18] + data[,19] + data[,20]+ data[,21] + data[,22] + data[, 23] + data[, 24] + data[,37]+ data[,38] + data[, 39] + data[, 40] + data[, 41] + data[, 42] + data[, 43] + data[, 44],family=binomial(link="logit"))
+summary(lmodel)
+```
+
+We observe that the relevant variables are Price, Information provided on the label, Provenance on the label, Description of taste and aroma on the label, Wines history and White wine because they have the lowest p-value associated with the value in the z value column.
+We make a logistic regression using only the relevant factor to check if we are able to predict the success of Italian wine knowing the relevant factor.
+```{r}
+print(paste("likelihood ratio test, pvalue", round(with(lmodel,
+pchisq(null.deviance - deviance, df.null - df.residual, lower.tail = FALSE)), 5)))
+```
+```{r}
+nullmodel<-glm(win ~ 1, family = binomial(link = "logit"))
+print(paste("pseudo R-squared:", round(1 - logLik(lmodel) / logLik(nullmodel),
+3)))
+
+
+model<-glm(win~ data[, 14] + data[, 16] + data[,19] + data[,21] + data[, 24] + data[,44] ,family=binomial(link="logit"))
+summary(model)
+```
+we compare lmodel which is our original model with the null model, which is the intercept model. We do reject the null model if the values are smaller than 0.05. 
+
+We proceeded then to calculate the pseudo r squared, which cannot be tested, ranges between 0 and 1 and is used especially when comparing two models. In this case we get 0.19
+```{r}
+print(paste("likelihood ratio test, pvalue:",round(with(model,
+pchisq(null.deviance - deviance, df.null - df.residual,lower.tail = FALSE)), 5)))
+nullmodel <- glm(win ~ 1, family = binomial(link = "logit"))
+print(paste("pseudo R-squared:", round(1 - logLik(model) / logLik(nullmodel),
+3)))
+
+```
+We use the set seed function to be sure that the results are as reliable as possible. we choose as argument the whole set of values contained in these variables, selecting a sample of 150. 
+```{r}
+set.seed(n)
+
+index.tr<-sample(c(1:n),150)
+
+trmodel1<-glm( win[index.tr] ~ data[index.tr, 14] + data[index.tr, 16] + data[index.tr, 19] + data[index.tr, 21] + data[index.tr, 24]+ data[index.tr, 44],family=binomial(link='logit'))
+train.index<-index.tr
+test.index<-seq(1:n)[-train.index]
+test<-data.frame(cbind(data[test.index, 13], data[test.index, 16], data[test.index, 19], data[test.index, 21], data[test.index, 24], data[test.index, 44]))
+predicted1<-exp(trmodel1$coefficients[1]+ trmodel1$coefficients[2:7]%*%t(test))/(1+exp(trmodel1$coefficients[1]+ trmodel1$coefficients[2:7]%*%t(test)))
+
+predicted<-ifelse(predicted1>0.5,1,0)
+
+table(win[test.index], predicted)
+
+```
+We organize the test dataset into a dataframe so that we can move on to calculate the predicted probabilities. 
+
+We assign the value 1 for the “superior quality” or “prompt to buy” like we did at the beginning, to predict probabilities larger than 0.5.
+
+Finally we calculate the accuracy of this model, in this case 0.21: 
+the misclassification error is given by the proportion of cases where
+we fail to predict the correct response, calculated through the mean obtained by the number of responses predicted not corresponding to the actual na.rm refers to the logical parameter that tells the function whether or not to remove NA values from the calculation, in this case yes. 
+
+The accuracy is the percentage of cases where we correctly classify:
+equal to 1-misclassification error
+```{r}
+round(prop.table(table(win[test.index],predicted),1),2)
+```
+```{r}
+misClassificError <- mean(predicted!= win[test.index], na.rm=T)
+print(paste("misClassification Error:", round(misClassificError,2)))
+print(paste("Accuracy:",round(1-misClassificError,2)))
+```
+
+The predictive model has a quite good accuracy of 79%, but looking at the confusion matrix we can observe that the model is not good to predict the unsuccess of Italian wine.
+
+##Conclusion
+Looking at the calculated relapse we notice that shoppers of Italian wine are not price sensitive, since the evaluated std of the variable cost is negative, and pay consideration to the information given on the label. Among the information on the two that are related to the success of Italian wine are the provenance of the wine and the portrayal of taste and aroma. The negative sign of the variable white wine implies that the more the buyer like white wines the less they may have a positive judge on Italian wine. These comes about affirm that too habitual Italian wine customers are not cost touchy and lean toward ruddy wine, whereas there's no correlation between routine Italian wine utilization and the bundling of wine.
+
+
+
+
+
+
+
+
+
+Question 3
+
+```{r}
+data[, 37:44][is.na(data[, 37:44])] <- 3
+correlation<-round(cor(data[,37:44]),3)
+#change the names of the variables to have them in a more compact format in the output
+colnames(correlation)<-c("Dryness","Sweet","Oak","Fruity","Still","Spark","Red","White")
+rownames(correlation)<-c("Dryness","Sweet","Oak","Fruity","Still","Spark","Red","White")
+correlation
+library(psych)
+KMO(data[,37:44])
+cortest.bartlett(data[,37:44])
+Fanalysis<-factanal(data[,37:44],3)
+Fanalysis
+Fanalysis3<-factanal(data[,37:44],3, rotation="varimax",scores="regression")
+Fanalysis3
+
+```
+```{r}
+#We will analyse the mouth feeling, the color and the taste in order to understand if the customer's perception in multidimensional
+f.scores<-Fanalysis3$scores
+
+mouth_feel<-f.scores[,1]
+colour<- f.scores[,2]
+Taste<- f.scores[,3]
+
+f.load <-Fanalysis3$loadings
+
+cluster_data <-f.scores
+
+distance_matrix<- dist(cluster_data, method = "euclidean")
+
+clu<-hclust(distance_matrix, method = "ward.D")
+plot (clu, xlab = "", ylab= "", hang =-1, cex=0.6)
+m<-rect.hclust(clu, k=4,which = c(1,2,3,4), border = 1:4)
+
+```
+```{r}
+
+
+```
+
+
+
+
+
+
+
+
+
+
+QUESTION 3
+
+```{r}
+#It's crucial to visualize the scores of different attributes through frequency plots
+Pinto<-cleandata
+#setting the plot
+par(mfrow=c(2,4), cex=0.3, cex.main=2, cex.axis= 1)
+for(i in 37:44){
+  
+  fre<-table(Pinto[,i]) 
+  
+  fre.p <- round(fre/dim(data)[1]*100,1) 
+  
+  bp <- barplot(fre.p, ylim=c(0, max(fre.p)*(1+0.5)), 
+        main=colnames(data[i]))
+  
+  text(bp, fre.p, label=paste(fre.p, "%"), pos=3, cex=1.5)
+}   
+```
+
+```{r}
+test_results<-matrix(0,3,8)
+
+for (i in 1:8){
+  #mean of the attribute scores greater than the indifference level
+  if (mean(Pinto[,36+i])>3){
+  
+      t_test<-t.test(Pinto[,36+i], data=Pinto, mu=3, alternative = "greater")
+      test_results[1,i]<- t_test$estimate
+      test_results[2,i]<- t_test$statistic
+      test_results[3,i] <- t_test$p.value
+  
+  }
+  #mean of the attribute scores equal or lower than the indifference level
+  else{
+      t_test<-t.test(Pinto[,36+i], data=Pinto, mu=3, alternative = "less")
+      test_results[1,i]<- t_test$estimate
+      test_results[2,i]<- t_test$statistic
+      test_results[3,i] <- t_test$p.value
+  }
+      
+      
+}
+colnames(test_results)<-c(colnames(Pinto[37:44]))
+rownames(test_results) <- c("mean", "t-test", "p-value")
+test_results
+```
+Dryness: has a significant positive impact on participants’ perception. Since the p-value is next to 0, we reject the hypothesis that the mean of the scores for this attribute is next to the level of indifference 3. 
+
+Sweetness: has a significant negative impact on participants’ perceptions. Since the p-value is next to 0, we reject the hypothesis that the mean of the scores for this attribute is next to the level of indifference 3.
+
+Oaktaste: does not have a significant impact on participants’ perception. Since the p-value is 11.38, far above the 5% level of significance, we cant reject the H0.
+
+Fruitytaste: has a positive impact on the participants’ perception. The p-value is lower than 5% but, if we compare its t-test with the ones of attributes like dryness and sweetness, we can state that respondents attitude toward this characteristic is less significant.
+
+Still: has a significant positive impact on the participants’ perception. Since the p-value is next to 0, we reject the hypothesis that the mean of the scores for this attribute is next to the level of indifference 3.
+
+Spark: has a positive impact on the participants’ perception. Since the p-value is next to 0, we reject the hypothesis that the mean of the scores for this attribute is next to the level of indifference 3. Despite this, the p-value of this attribute is significantly greater than the ones of attributes like dryness and sweetness and its t-test is lower. Therefore we can accept the H1 but we have to underline that it has a smaller impact on respondents perception.
+
+Red: has a significant positive impact on the participants’ perception. Since the p-value is next to 0, we reject the hypothesis that the mean of the scores for this attribute is next to the level of indifference 3.
+
+White: has a significant positive impact on the participants’ perception. Since the p-value is next to 0, we reject the hypothesis that the mean of the scores for this attribute is next to the level of indifference 3.
+```{r}
+#Put the attributes on a scale from the most impacting attribute to the least impacting one
+most_imp<- order(test_results[3,])
+
+test_results<-test_results[, most_imp]
+
+colnames(test_results)
+```
+
+```{r}
+#Build a correlation table to see if there is any correlation
+data[, 37:44][is.na(data[, 37:44])] <- 3
+correlation<-round(cor(data[,37:44]),3)
+#change the names of the variables to have them in a more compact format in the output
+colnames(correlation)<-c("Dryness","Sweet","Oak","Fruity","Still","Spark","Red","White")
+rownames(correlation)<-c("Dryness","Sweet","Oak","Fruity","Still","Spark","Red","White")
+correlation
+#Perform a KMO test to see if we can exploit the correlation
+library(psych)
+KMO(data[,37:44])
+#The overall MSA is quite low (lower than 0.7 as it is suggested) but usually marketers accept a overall MSA>0.5
+#Perform a Barlett test to get to know the chi-square test for independence
+cortest.bartlett(data[,37:44])
+#The chi-square test for independence, p-value is very low therefore we reject the hypothesis that the variables are independent.
+
+```
+Now we can proceed with the factorial analysis:
+```{r}
+Fanalysis<-factanal(data[,37:44],3)
+Fanalysis
+Fanalysis3<-factanal(data[,37:44],3, rotation="varimax",scores="regression")
+Fanalysis3
+```
+Despite the cumulative variance is a bit low, the p-value allow us to validate the correlation structure.
+The factors are going to be:
+F1: mouth feel –> is described as dryness and roughness rather than a taste and it is subject to the presence/absence of sugar.
+F2: color –> this factor is correlated with the attributes Red and White which are the possible colors of the wine.
+F3: Taste –> this factor is strongly correlated with the fruity taste and sparkling, attributes correlated with the aroma of the wine.
+Now we can tell that the respondents’ perception is a multidimensional trait.
+```{r}
+#We will analyse the mouth feeling, the color and the taste in order to understand if the customer's perception in multidimensional
+fact.scores<-Fanalysis3$scores
+
+mouth_feel<-fact.scores[,1]
+colour<- fact.scores[,2]
+Taste<- fact.scores[,3]
+
+fact.load <-Fanalysis3$loadings
+
+cluster_data <-fact.scores
+
+distance_matrix<- dist(cluster_data, method = "euclidean")
+
+clu<-hclust(distance_matrix, method = "ward.D")
+plot (clu, xlab = "", ylab= "", hang =-1, cex=0.6)
+membership<-rect.hclust(clu, k=4,which = c(1,2,3,4), border = 1:4)
+
+```
+```{r}
+memb<-cutree(clu, k=4)
+clu.scores<-matrix(0,4,3)
+
+rownames(clu.scores)<-c("clu1", "clu2", "clu3", "clu4")
+
+for (i in 1:4){
+  for (j in 1:3){
+  clu.scores[i,j]<-round(mean(fact.scores[memb==i,j]),3)
+  }
+}
+
+colnames(clu.scores)<-c("mouth feel", "colour", "Taste")
+clu.scores
+```
+From here we can recognize 4 different types customers:
+Cluster 1: coloursensitivecustomer/tasteindifferentcustomers –> they select their wines giving particular attention to wine’s color. Moreover they are really indifferent to its taste.
+Cluster 2: tastesensitivecustomer –> they have a really taste score and they don’t care about mouth feel and color
+Cluster 3: colourindifferentcustomers/mouthfeelsensitivecustomer –> they are almost indifferent to wine’s color and select their wine based on the mouth feel therefore the quantity of sugar present in the wine.
+Cluster 4: tasters –> they make their choices without caring particularly on the external aspect of the wine, they value the peculiar aspects like the taste.
+
+
+
+
+
+This analysis will be answering question 4 of our research proposal:What are the key words or images to make our wine desirable for US consumers?. In order to achieve this, we are going to analyses the differences of frequent Italian wine consumers and those who aren't. 
+
+QUESTION 4:
+
+In order to complete this question, first we are going to create a binomial variable which will divide the sample in consumers who usually buy Italian wine and consumers who do not. This division will be based on V31 from the questionnaire.
+Our assumption is that we assume that habitual Italian wine consumers answered the questionnaire with Italian wine in mind, while all other consumers based their answers on wine in general. We are going to analyze the difference of means of the answers from V11 to v18 from the two sub-samples, to understand which attributes are valued more by habitual Italian wine consumers compared to other consumers. We are going to make inference at a 95% confidence interval in order to make a conclusion on the american market and not only on the sample.
+
+
+```{r}
+data<-download#source the data matrix
+data <- na.exclude(data)#removes all non answers from data
+ 
+
+#question 4
+n <- nrow(data)
+s<-rep(0,n)
+
+#stater code
+s[data[,31]!=1]<-"buy other"
+s[data[,31]==1]<-"buy ita"
+s<-factor(s)
+data[,31]<-s
+
+```
+In the code seen above I divide the data into people who buy Italian wines and those who buy other wines. Then I name the variable for ease of code interpretation. This will allow us to analyse the differences between the two sub-samples and their preferences. 'S' is converted to a factor. This is done because factors are easier to work with thus simplifying the analysis process.
+
+
+```{r}
+#code 1
+j<-1
+v<-j+10
+vv<-data[,v]
+
+print(paste("we analyse the variable: ",data[j]))
+#[1] "we analyse the variable:  Pl_Origin"
+s<-factor(s)
+data[,'s'] <- as.factor(data[,'s'])
+ttestGC(vv ~ s, mu=0, graph = T, first = "buy ita")
+
+#This code format will be used to analyse all the attributes 
+```
+
+With a P-value of 0.22 we can determine that frequent wine drinkers are influenced by the place of origin of the wine more than other consumers. This is because, due to the 95% confidence interval, we reject the null hypothesis.
+
+
+
+```{r}
+#code 2
+v<-j+10
+vv<-data[,v]
+print(paste("we analyse the variable: ",data[j]))
+## [1] "we analyse the variable:  W_Brand"
+print(ttestGC(vv ~ s, mu=0, graph = T, first = "buy ita"))
+j<-j+1
+
+
+
+```
+
+```{r}
+#code 3
+v<-j+10
+vv<-data[,v]
+print(paste("we analyse the variable: ",data[j]))
+## [1] "we analyse the variable:  Price"
+print(ttestGC(vv ~ s, mu=0, graph = T, first = "buy ita"))
+j<-j+1
+
+#this test shows us that frequent consumers arent as influenced by price when buying compared to normal consumers
+
+
+```
+
+```{r}
+# code 4
+v<-j+10
+vv<-data[,v]
+print(paste("we analyse the variable: ",data[j]))
+## [1] "we analyse the variable:  Pack"
+print(ttestGC(vv ~ s, mu=0, graph = T, first = "buy ita"))
+j<-j+1
+
+#as there is a small pvalue that, however, is bigger than 0, packaging plays an important role in the buying decisions of a frequent wine consumer
+
+
+```
+
+
+```{r}
+#code 5
+v<-j+10
+vv<-data[,v]
+print(paste("we analyse the variable: ",data[j]))
+## [1] "we analyse the variable:  Quality"
+print(ttestGC(vv ~ s, mu=0, graph = T, first = "buy ita"))
+j<-j+1
+#quality is obviously an important attribute for frequent consumers, this is demonstrated by this ttest.
+```
+
+```{r}
+#code 6
+v<-j+10
+vv<-data[,v]
+print(paste("we analyse the variable: ",data[j]))
+## [1] "we analyse the variable:  Info_lab"
+print(ttestGC(vv ~ s, mu=0, graph = T, first = "buy ita"))
+j<-j+1
+#
+
+```
+
+```{r}
+#code 7
+v<-j+10
+vv<-data[,v]
+print(paste("we analyse the variable: ",data[j]))
+## [1] "we analyse the variable:  Sal_rec"
+print(ttestGC(vv ~ s, mu=0, graph = T, first = "buy ita"))
+j<-j+1
+
+
+```
+
+```{r}
+#Code 8
+v<-j+10
+vv<-data[,v]
+print(paste("we analyse the variable: ",data[j]))
+## [1] "we analyse the variable:  F_rec"
+print(ttestGC(vv ~ s, mu=0, graph = T, first = "buy ita"))
+j<-j+1
+
+
+```
+As we can see from this part of the analysis, the two attributes which are most important for frequent italian wine consumers are: place of origin and the information on the label. 
+
+```{r}
+#code 9 barplot
+#In this barplot we are going to use the results of the previous analysis in order to understand what information frequent consumers look for on the label of a wine bottle. We are going to look at variables 19-24 taken from the questionnaire.
+
+frequent <- data[data[, 31] == 1,]
+
+m<-rep(0,6)
+
+i<-1
+for (v in 19:24){
+  vv<-frequent[,v]
+  m[i]<-mean(vv)
+  i<-i+1 #always increases by one 
+}
+m<-sort(m, decreasing = T) #sort m list
+
+bp<-barplot(m, name = c("Prov","Tech_info", "d_tase", "food ", "brand", "history"), ylim=c(0,5))
+
+  text(bp, m, labels = round(m,3), pos = 3)
+  
+ # Looking at the barplot, we can see that the provenance of the wine, taste and aroma and technical info are the top 3 attributes that frequent italian wine consumers seek on the label.
+
+```
+```{r}
+
+# with this barplot we will compare the previous barplot with the results with the whole data sample. This is done to understand whether the sought after attributes differ based on the consumer.
+m<-rep(0,6)
+
+i<-1
+for (v in 19:24){
+  vv<-data[,v]
+  m[i]<-mean(vv)
+  i<-i+1
+}
+m<-sort(m, decreasing = T)
+
+bp<-barplot(m, name = c("Prov","Tech_info", "d_tase", "food ", "brand", "history"), ylim=c(0,5))
+
+  text(bp, m, labels = round(m,3), pos = 3)
+  
+  # as we can see the results are the same. Although the means are slightly lower than before, the top 3 sought after attributes remain the same none the less. This analysis tells us that including this information on wine labels will attract the most customers in general. Regardless if they frequently consume italian wine or not.
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
